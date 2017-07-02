@@ -6,6 +6,10 @@
 
 单机斗地主
 
+开发平台：windows
+
+使用的工具：Cocos creator + Visual studio code + Visual Studio 2015（编译生成windows可执行程序用）
+
 目前的实现：
 
 * 整体框架
