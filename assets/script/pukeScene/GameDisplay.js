@@ -240,3 +240,21 @@ exports.displayResult = (parentNode, text) => {
         parentNode.addChild(node);
     });
 }
+
+exports.setSkin = (parentNode, ishost) => {
+    var source;
+    if (ishost) source = 'skin/host';
+    else source = 'skin/farmer';
+    cc.loader.loadRes(source, cc.SpriteFrame, function(err, spriteFrame) {
+        if (err) {
+            cc.error(err.message || err);
+            return;
+        }
+        var node = new cc.Node('skin');
+        node.setPosition(0, 0);
+        let spriteComponent = node.addComponent(cc.Sprite);
+        spriteComponent.spriteFrame = spriteFrame;
+        
+        parentNode.addChild(node);
+    });
+}

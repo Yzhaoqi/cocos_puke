@@ -19,18 +19,26 @@ var seat = {
         return this.left;
     }
 }
+var avatar = [];
 var pointToChoose = [0, 1, 2, 3];
 var hostNum = -1;
 var currentSeat = -1;
 var pointForSeat = [0, 0, 0];
+var orderSeat = [0, 0, 0];
 var chooseSeat = 0;
 var hasBeenPass = false;
 var is_first = true;
+
+var bgm;
 
 cc.Class({
     extends: cc.Component,
 
     properties: {
+        bgm: {
+            url: cc.AudioClip,
+            default: null
+        }
     },
 
     // use this for initialization
@@ -43,6 +51,11 @@ cc.Class({
         seat.medium = self.node.getChildByName('HandCardMedium');
         seat.right = self.node.getChildByName('HandCardRight');
         seat.left = self.node.getChildByName('HandCardLeft');
+
+        avatar[0] = self.node.getChildByName('MediumAvatar');
+        avatar[1] = self.node.getChildByName('RightAvatar');
+        avatar[2] = self.node.getChildByName('LeftAvatar');
+
         self.setEvent(self);
 
         gameDisplay.displayStartGameButton('button/game_start', self.node, self);
@@ -51,12 +64,15 @@ cc.Class({
     startGame: function() {
         var self = this;
 
+        bgm = cc.audioEngine.play(this.bgm, true, 1);
+
         ThenJs((cont) => {self.initialCards(self, cont)})
         .then((cont, p) => {self.handCardLoad(p, cont)})
         .then((cont, p) => {self.chooseHost(p, cont)})
     },
 
     restartGame: function() {
+        cc.audioEngine.stop(bgm);
         var self = this;
         cc.log(this);
         var children = control.children;
@@ -73,6 +89,7 @@ cc.Class({
         hostNum = -1;
         currentSeat = -1;
         pointForSeat = [0, 0, 0];
+        orderSeat = [0, 0, 0];
         chooseSeat = 0;
         hasBeenPass = false;
         is_first = true;
@@ -263,12 +280,19 @@ cc.Class({
             control.getChildByName('PickCardRight').removeAllChildren();
             control.getChildByName('PickCardLeft').removeAllChildren();
             control.getChildByName('PickCardMedium').removeAllChildren();
+            for (var i = 0; i < 3; i++) gameDisplay.setSkin(avatar[i], i == hostNum);
         }, 0);
         var self = this;
         var zone;
         if (hostNum == 0) zone = mediumZone;
         else if (hostNum == 1) zone = rightZone;
         else zone = leftZone;
+
+        orderSeat[hostNum] = 0;
+        var nextNum = (hostNum + 1) % 3;
+        orderSeat[nextNum] = 1;
+        nextNum = (nextNum + 1) % 3;
+        orderSeat[nextNum] = 2;
 
         currentSeat = hostNum;
 
@@ -303,7 +327,12 @@ cc.Class({
                 control.getChildByName('PickCardLeft').removeAllChildren();
                 zone = leftZone;
             }
-            robot.pushCard(zone, gameLogic, gameDisplay, seat.getSeat(currentSeat), self);
+            var last = (currentSeat + 2) % 3;
+            var lastZone;
+            if (last == 0) lastZone = mediumZone;
+            else if (last == 1) lastZone = rightZone;
+            else lastZone = leftZone;
+            robot.pushCard(zone, hasBeenPass, orderSeat[currentSeat], lastZone.getHandCardNum(), gameLogic, gameDisplay, seat.getSeat(currentSeat), self);
         }
     },
         
@@ -359,6 +388,7 @@ cc.Class({
         if (hasBeenPass) {
             gameLogic.reset();
             is_first = true;
+            hasBeenPass = false;
         } else {
             hasBeenPass = true;
         }
