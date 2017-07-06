@@ -14,7 +14,7 @@ exports.pushCard = (zone, isLastPass, order, lastHandCardNum, gameLogic, gameDis
         if (isLastPass && order == 1) {
             self.passCard();
         } else {
-            var array = getPushCard(zone, gameLogic, lastHandCardNum);
+            var array = getPushCard(zone, gameLogic, lastHandCardNum, isLastPass, order);
             if (array.length != 0) {
                 gameLogic.setCurrentCard(array);
                 gameLogic.pushCards();
@@ -29,7 +29,7 @@ exports.pushCard = (zone, isLastPass, order, lastHandCardNum, gameLogic, gameDis
     }, 500);
 }
 
-var getPushCard = function(zone, gameLogic, lastHandCardNum) {
+var getPushCard = function(zone, gameLogic, lastHandCardNum, isLastPass, order) {
     var currentCard = zone.getHandCards();
     var num = zone.getHandCardNum();
     var last = gameLogic.getLastCards();
@@ -156,12 +156,13 @@ var getPushCard = function(zone, gameLogic, lastHandCardNum) {
             break;
         // 对更多的case进行讨论。
     }
-    array = getBomb(currentCard, currentCardValue, num, lastHandCardNum);
+    array = getBomb(currentCard, currentCardValue, num, lastHandCardNum, isLastPass, order);
     return array;
 }
 
-var getBomb = function(currentCard, currentCardValue, num, lastHandCardNum) {
+var getBomb = function(currentCard, currentCardValue, num, lastHandCardNum, isLastPass, order) {
     if (lastHandCardNum > 5) return [];
+    if (!isLastPass && order == 2) return [];
     var array = [];
     var i, j = 1;
     array[0] = currentCard[0];
